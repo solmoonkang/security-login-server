@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constant {
 
-	public static final String USER_EMAIL = "email";
-	public static final String USER_NICKNAME = "nickname";
+	public static final String MEMBER_EMAIL = "email";
+	public static final String MEMBER_NICKNAME = "nickname";
 
 	public static final String BLANK = " ";
 	public static final String BEARER = "Bearer";
