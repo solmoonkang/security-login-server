@@ -1,0 +1,72 @@
+jwt:
+  iss: auth
+  secret:
+    access-key: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+  access-expire: 300_000        # 5 min
+  refresh-expire: 604_800_000   # 7 day
+  # access-expire: 10_000       # 10 sec
+
+spring:
+
+  application:
+    name: spring-oauth2
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-oauth2
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:tcp://localhost/~/think
+    username: sa
+    password:
+
+    jpa:
+      database-platform: org.hibernate.dialect.H2Dialect
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true
+      hibernate:
+        ddl-auto: create-drop
+
+  security:
+    oauth2:
+      client:
+
+        registration:
+          kakao:
+            client-id: 684a5dde632a9f23877244e23ea8620c
+            client-secret: BSxiI8nSqy3Ja3e15Hw6r8ESmU9ULN35
+            redirect-uri: http://localhost:8080/oauth/authorize/kakao
+            authorization-grant-type: authorization_code
+            client-name: Kakao
+            scope: profile_nickname, account_email
+
+          google:
+            client-id: 864609368162-s04mmrh57da6mr27gugi7onts8u576d2.apps.googleusercontent.com
+            client-secret: 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
+            scope: email, profile
+            redirect-uri: http://localhost:8080/oauth/authorize/google
+            client-name: Google
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework: INFO
+      hibernate: INFO
