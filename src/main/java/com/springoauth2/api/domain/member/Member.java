@@ -1,4 +1,6 @@
-package com.springoauth2.api.domain;
+package com.springoauth2.api.domain.member;
+
+import com.springoauth2.api.dto.CreateMemberRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,17 +15,20 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "tbl_users")
+@Table(name = "tbl_members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class Member {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
+	@Column(name = "id")
 	private Long id;
 
 	@Column(name = "email")
 	private String email;
+
+	@Column(name = "nickname")
+	private String nickname;
 
 	@Column(name = "password")
 	private String password;
@@ -35,10 +40,21 @@ public class User {
 	private String introduce;
 
 	@Builder
-	public User(String email, String password, String blog, String introduce) {
+	private Member(String email, String nickname, String password, String blog, String introduce) {
 		this.email = email;
+		this.nickname = nickname;
 		this.password = password;
 		this.blog = blog;
 		this.introduce = introduce;
+	}
+
+	public static Member createMember(CreateMemberRequest createMemberRequest, String password) {
+		return Member.builder()
+			.email(createMemberRequest.email())
+			.nickname(createMemberRequest.nickname())
+			.password(password)
+			.blog(createMemberRequest.blog())
+			.introduce(createMemberRequest.introduce())
+			.build();
 	}
 }
