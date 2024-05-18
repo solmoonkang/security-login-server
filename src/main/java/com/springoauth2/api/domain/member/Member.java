@@ -39,6 +39,9 @@ public class Member {
 	@Column(name = "introduce")
 	private String introduce;
 
+	@Column(name = "refresh_token")
+	private String refreshToken;
+
 	@Builder
 	private Member(String email, String nickname, String password, String blog, String introduce) {
 		this.email = email;
@@ -56,5 +59,9 @@ public class Member {
 			.blog(createMemberRequest.blog())
 			.introduce(createMemberRequest.introduce())
 			.build();
+	}
+
+	public void updateRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
 	}
 }
