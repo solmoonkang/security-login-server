@@ -12,7 +12,6 @@ import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.global.config.TokenConfig;
-import com.springoauth2.global.util.Constant;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
