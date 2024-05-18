@@ -15,13 +15,13 @@ import com.springoauth2.api.dto.CreateMemberRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MemberController {
 
 	private final MemberService memberService;
 
-	@PostMapping
+	@PostMapping("/signup")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<String> signUp(@RequestBody @Validated CreateMemberRequest createMemberRequest) {
 		memberService.signUp(createMemberRequest);
