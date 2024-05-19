@@ -1,12 +1,16 @@
 package com.springoauth2.api.application;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.springoauth2.api.application.auth.JwtProviderService;
 import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.api.dto.CreateMemberRequest;
+import com.springoauth2.api.dto.LoginRequest;
+import com.springoauth2.api.dto.LoginResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,9 +19,10 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class MemberService {
 
-	private final MemberRepository memberRepository;
-
 	private final PasswordEncoder passwordEncoder;
+
+	private final MemberRepository memberRepository;
+	private final JwtProviderService jwtProviderService;
 
 	@Transactional
 	public void signUp(CreateMemberRequest createMemberRequest) {
@@ -31,6 +36,25 @@ public class MemberService {
 		);
 
 		memberRepository.save(member);
+	}
+
+	@Transactional
+	public LoginResponse login(LoginRequest loginRequest) {
+		final Member member = memberRepository.findMemberByEmail(loginRequest.email())
+			.orElseThrow(() -> new UsernameNotFoundException("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다."));
+		validatePasswordMatched(loginRequest.password(), member.getPassword());
+
+		final String accessToken = jwtProviderService.generateAccessToken(member.getEmail(), member.getNickname());
+		final String refreshToken = jwtProviderService.generateRefreshToken(member.getEmail());
+		member.updateRefreshToken(refreshToken);
+
+		return new LoginResponse(accessToken, refreshToken);
+	}
+
+	private void validatePasswordMatched(String rawPassword, String encodedPassword) {
+		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+			throw new IllegalArgumentException("❎[ERROR] 입력하신 비밀번호는 틀린 비밀번호입니다.");
+		}
 	}
 
 	private void validateEmailNotExists(String email) {
