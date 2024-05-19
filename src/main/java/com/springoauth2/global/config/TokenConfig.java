@@ -14,16 +14,16 @@ import lombok.Getter;
 public class TokenConfig {
 
 	private final String iss;
-	private final String salt;
+	private final String secretAccessKey;
 	private final long accessExpire;
 	private final long refreshExpire;
 	private final SecretKey secretKey;
 
-	public TokenConfig(String iss, long accessExpire, long refreshExpire, String salt) {
+	public TokenConfig(String iss, long accessExpire, long refreshExpire, String secretAccessKey) {
 		this.iss = iss;
 		this.accessExpire = accessExpire;
 		this.refreshExpire = refreshExpire;
-		this.salt = salt;
-		this.secretKey = Keys.hmacShaKeyFor(salt.getBytes(StandardCharsets.UTF_8));
+		this.secretAccessKey = secretAccessKey;
+		this.secretKey = Keys.hmacShaKeyFor(secretAccessKey.getBytes(StandardCharsets.UTF_8));
 	}
 }
