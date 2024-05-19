@@ -1,5 +1,6 @@
 package com.springoauth2.support;
 
+import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.dto.CreateMemberRequest;
 import com.springoauth2.api.dto.LoginRequest;
@@ -19,6 +20,10 @@ public class MemberFixture {
 			.blog("https://www.solmoon.com")
 			.introduce("Hello 👏")
 			.build();
+	}
+
+	public static AuthMember createAuthMember() {
+		return AuthMember.createAuthMember("solmoon@gmail.com", "solmoon");
 	}
 
 	public static CreateMemberRequest createMemberRequest() {
