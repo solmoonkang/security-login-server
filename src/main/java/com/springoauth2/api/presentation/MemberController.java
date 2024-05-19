@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.springoauth2.api.application.MemberService;
 import com.springoauth2.api.dto.CreateMemberRequest;
+import com.springoauth2.api.dto.LoginRequest;
+import com.springoauth2.api.dto.LoginResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,5 +28,11 @@ public class MemberController {
 	public ResponseEntity<String> signUp(@RequestBody @Validated CreateMemberRequest createMemberRequest) {
 		memberService.signUp(createMemberRequest);
 		return ResponseEntity.ok("SUCCESS SIGN UP");
+	}
+
+	@PostMapping("/login")
+	@ResponseStatus(HttpStatus.OK)
+	public ResponseEntity<LoginResponse> login(@RequestBody @Validated LoginRequest loginRequest) {
+		return ResponseEntity.ok(memberService.login(loginRequest));
 	}
 }
