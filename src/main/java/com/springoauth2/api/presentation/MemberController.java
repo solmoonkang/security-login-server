@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.springoauth2.api.application.MemberService;
-import com.springoauth2.api.dto.CreateMemberRequest;
-import com.springoauth2.api.dto.LoginRequest;
-import com.springoauth2.api.dto.LoginResponse;
+import com.springoauth2.api.dto.member.CreateMemberRequest;
+import com.springoauth2.api.dto.member.LoginRequest;
+import com.springoauth2.api.dto.member.LoginResponse;
 
 import lombok.RequiredArgsConstructor;
 

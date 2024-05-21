@@ -1,6 +1,6 @@
 package com.springoauth2.api.domain.member;
 
-import com.springoauth2.api.dto.CreateMemberRequest;
+import com.springoauth2.api.dto.member.CreateMemberRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
