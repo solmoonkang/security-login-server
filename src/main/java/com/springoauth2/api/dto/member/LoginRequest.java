@@ -1,4 +1,4 @@
-package com.springoauth2.api.dto;
+package com.springoauth2.api.dto.member;
 
 import jakarta.validation.constraints.NotBlank;
 
