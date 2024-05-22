@@ -27,7 +27,7 @@ public class MemberController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<String> signUp(@RequestBody @Validated CreateMemberRequest createMemberRequest) {
 		memberService.signUp(createMemberRequest);
-		return ResponseEntity.ok("SUCCESS SIGN UP");
+		return ResponseEntity.ok("SUCCESSFULLY SIGN UP");
 	}
 
 	@PostMapping("/login")
