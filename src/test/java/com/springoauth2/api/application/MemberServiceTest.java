@@ -117,7 +117,7 @@ class MemberServiceTest {
 	}
 
 	@Test
-	@DisplayName("LOGIN(❌ FAIL): 존재하지 않는 사용자 이메일로 로그인을 요청했습니다.")
+	@DisplayName("LOGIN(❌ FAILURE): 존재하지 않는 사용자 이메일로 로그인을 요청했습니다.")
 	void login_email_UsernameNotFoundException_fail() {
 		// GIVEN
 		Member member = MemberFixture.createMemberEntity();
@@ -132,7 +132,7 @@ class MemberServiceTest {
 	}
 
 	@Test
-	@DisplayName("LOGIN(❌ FAIL): 잘못된 사용자 비밀번호로 로그인을 요청했습니다.")
+	@DisplayName("LOGIN(❌ FAILURE): 잘못된 사용자 비밀번호로 로그인을 요청했습니다.")
 	void login_password_IllegalArgumentException_fail() {
 		// GIVEN
 		Member member = MemberFixture.createMemberEntity();
