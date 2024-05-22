@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.springoauth2.api.application.auth.JwtProviderService;
 import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.domain.member.repositroy.MemberRepository;
-import com.springoauth2.api.dto.CreateMemberRequest;
-import com.springoauth2.api.dto.LoginRequest;
-import com.springoauth2.api.dto.LoginResponse;
+import com.springoauth2.api.dto.member.CreateMemberRequest;
+import com.springoauth2.api.dto.member.LoginRequest;
+import com.springoauth2.api.dto.member.LoginResponse;
 
 import lombok.RequiredArgsConstructor;
 
