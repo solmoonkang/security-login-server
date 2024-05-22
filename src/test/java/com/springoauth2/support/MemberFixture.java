@@ -2,8 +2,8 @@ package com.springoauth2.support;
 
 import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.api.domain.member.Member;
-import com.springoauth2.api.dto.CreateMemberRequest;
-import com.springoauth2.api.dto.LoginRequest;
+import com.springoauth2.api.dto.member.CreateMemberRequest;
+import com.springoauth2.api.dto.member.LoginRequest;
 
 public class MemberFixture {
 
