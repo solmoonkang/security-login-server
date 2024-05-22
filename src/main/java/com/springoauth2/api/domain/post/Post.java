@@ -1,6 +1,7 @@
 package com.springoauth2.api.domain.post;
 
 import com.springoauth2.api.domain.member.Member;
+import com.springoauth2.api.dto.post.CreatePostRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,5 +42,13 @@ public class Post {
 		this.title = title;
 		this.content = content;
 		this.member = member;
+	}
+
+	public static Post createPost(Member member, CreatePostRequest createPostRequest) {
+		return Post.builder()
+			.title(createPostRequest.title())
+			.content(createPostRequest.content())
+			.member(member)
+			.build();
 	}
 }
