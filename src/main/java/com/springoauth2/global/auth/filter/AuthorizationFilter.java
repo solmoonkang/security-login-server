@@ -11,6 +11,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.springoauth2.api.application.auth.JwtProviderService;
 import com.springoauth2.api.domain.auth.AuthMember;
+import com.springoauth2.global.error.exception.NotFoundException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,7 +58,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 				return;
 			}
 
-			throw new IllegalArgumentException("❎[ERROR] JWT 토큰이 존재하지 않습니다.");
+			throw new NotFoundException("❎[ERROR] JWT 토큰이 존재하지 않습니다.");
 		} catch (Exception e) {
 			log.warn("JWT ERROR 상세 설명: {}", e.getMessage());
 			handlerExceptionResolver.resolveException(httpServletRequest, httpServletResponse, null, e);

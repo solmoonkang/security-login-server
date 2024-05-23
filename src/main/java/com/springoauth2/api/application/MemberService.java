@@ -1,6 +1,5 @@
 package com.springoauth2.api.application;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +10,9 @@ import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.api.dto.member.CreateMemberRequest;
 import com.springoauth2.api.dto.member.LoginRequest;
 import com.springoauth2.api.dto.member.LoginResponse;
+import com.springoauth2.global.error.exception.BadRequestException;
+import com.springoauth2.global.error.exception.ConflictException;
+import com.springoauth2.global.error.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +43,7 @@ public class MemberService {
 	@Transactional
 	public LoginResponse login(LoginRequest loginRequest) {
 		final Member member = memberRepository.findMemberByEmail(loginRequest.email())
-			.orElseThrow(() -> new UsernameNotFoundException("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다."));
+			.orElseThrow(() -> new NotFoundException("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다."));
 		validatePasswordMatched(loginRequest.password(), member.getPassword());
 
 		final String accessToken = jwtProviderService.generateAccessToken(member.getEmail(), member.getNickname());
@@ -53,25 +55,25 @@ public class MemberService {
 
 	private void validatePasswordMatched(String rawPassword, String encodedPassword) {
 		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-			throw new IllegalArgumentException("❎[ERROR] 입력하신 비밀번호는 틀린 비밀번호입니다.");
+			throw new BadRequestException("❎[ERROR] 입력하신 비밀번호는 틀린 비밀번호입니다.");
 		}
 	}
 
 	private void validateEmailNotExists(String email) {
 		if (memberRepository.existsMemberByEmail(email)) {
-			throw new IllegalArgumentException("❎[ERROR] 입력하신 이메일은 이미 존재하는 이메일입니다.");
+			throw new ConflictException("❎[ERROR] 입력하신 이메일은 이미 존재하는 이메일입니다.");
 		}
 	}
 
 	private void validateNicknameNotExists(String nickname) {
 		if (memberRepository.existsMemberByNickname(nickname)) {
-			throw new IllegalArgumentException("❎[ERROR] 입력하신 닉네임은 이미 존재하는 닉네임입니다.");
+			throw new ConflictException("❎[ERROR] 입력하신 닉네임은 이미 존재하는 닉네임입니다.");
 		}
 	}
 
 	private void validatePasswordEquality(String password, String checkPassword) {
 		if (!password.equals(checkPassword)) {
-			throw new IllegalArgumentException("❎[ERROR] 입력하신 비밀번호와 동일하지 않습니다.");
+			throw new BadRequestException("❎[ERROR] 입력하신 비밀번호와 동일하지 않습니다.");
 		}
 	}
 }
