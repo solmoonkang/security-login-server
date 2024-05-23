@@ -42,6 +42,13 @@ public class PostService {
 			.toList();
 	}
 
+	public PostResponse getPostDetailById(AuthMember authMember, Long postId) {
+		final Member member = getMemberByEmail(authMember.email());
+		final Post post = getPostById(postId);
+
+		return convertToPostResponse(post, member);
+	}
+
 	private PostResponse convertToPostResponse(Post post, Member member) {
 		return new PostResponse(post.getTitle(), post.getContent(), member.getNickname());
 	}
@@ -49,5 +56,10 @@ public class PostService {
 	private Member getMemberByEmail(String email) {
 		return memberRepository.findMemberByEmail(email)
 			.orElseThrow(() -> new UsernameNotFoundException("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다."));
+	}
+
+	private Post getPostById(Long postId) {
+		return postRepository.findById(postId)
+			.orElseThrow(() -> new IllegalArgumentException("❎[ERROR] 요청하신 게시글은 존재하지 않는 게시글입니다."));
 	}
 }
