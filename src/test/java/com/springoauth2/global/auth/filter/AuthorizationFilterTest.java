@@ -20,6 +20,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.springoauth2.api.application.auth.JwtProviderService;
 import com.springoauth2.api.domain.auth.AuthMember;
+import com.springoauth2.global.error.exception.NotFoundException;
 import com.springoauth2.support.MemberFixture;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -76,7 +77,7 @@ class AuthorizationFilterTest {
 
 	@Test
 	@DisplayName("DO FILTER INTERNAL(❌ FAIL): Access/RefreshToken이 만료된 토큰으로 인증/인가 필터를 통과하지 못했습니다.")
-	void doFilterInternal_expired_IllegalArgumentException_fail() {
+	void doFilterInternal_expired_NotFoundException_fail() {
 		// GIVEN
 		String token = "Access-RefreshToken";
 
@@ -92,7 +93,7 @@ class AuthorizationFilterTest {
 				eq(mockHttpServletRequest),
 				eq(mockHttpServletResponse),
 				isNull(),
-				any(IllegalArgumentException.class)
+				any(NotFoundException.class)
 			);
 	}
 }

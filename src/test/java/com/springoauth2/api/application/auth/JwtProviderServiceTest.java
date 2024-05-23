@@ -18,7 +18,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -27,6 +26,7 @@ import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.global.config.TokenConfig;
 import com.springoauth2.global.config.TokenConfigTest;
+import com.springoauth2.global.error.exception.NotFoundException;
 import com.springoauth2.support.JwtFixture;
 import com.springoauth2.support.MemberFixture;
 
@@ -137,7 +137,7 @@ class JwtProviderServiceTest {
 
 		// WHEN & THEN
 		assertThatThrownBy(() -> jwtProviderService.reGenerateToken(refreshToken, mockHttpServletResponse))
-			.isInstanceOf(UsernameNotFoundException.class)
+			.isInstanceOf(NotFoundException.class)
 			.hasMessage("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다.");
 	}
 
@@ -155,7 +155,7 @@ class JwtProviderServiceTest {
 
 		// WHEN & THEN
 		assertThatThrownBy(() -> jwtProviderService.reGenerateToken(refreshToken, mockHttpServletResponse))
-			.isInstanceOf(UsernameNotFoundException.class)
+			.isInstanceOf(NotFoundException.class)
 			.hasMessage("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다.");
 	}
 
@@ -239,19 +239,19 @@ class JwtProviderServiceTest {
 
 	@Test
 	@DisplayName("IS USABLE(❌ FAIL): 해당 토큰은 비어 있는 토큰입니다.")
-	void isUsable_emptied_IllegalArgumentException_fail() {
+	void isUsable_emptied_NotFoundException_fail() {
 		// WHEN & THEN
 		assertThatThrownBy(() -> jwtProviderService.isUsable(""))
-			.isInstanceOf(IllegalArgumentException.class)
+			.isInstanceOf(NotFoundException.class)
 			.hasMessage("❎[ERROR] JWT 토큰이 존재하지 않습니다.");
 	}
 
 	@Test
 	@DisplayName("IS USABLE(❌ FAIL): 해당 토큰은 잘못된 토큰입니다.")
-	void isUsable_invalid_IllegalArgumentException_fail() {
+	void isUsable_invalid_NotFoundException_fail() {
 		// WHEN & THEN
 		assertThatThrownBy(() -> jwtProviderService.isUsable("INVALID TOKEN"))
-			.isInstanceOf(IllegalArgumentException.class)
+			.isInstanceOf(NotFoundException.class)
 			.hasMessage("❎[ERROR] 유효하지 않은 JWT 토큰입니다.");
 	}
 }
