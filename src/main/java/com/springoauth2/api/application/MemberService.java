@@ -1,5 +1,7 @@
 package com.springoauth2.api.application;
 
+import static com.springoauth2.global.util.Constant.*;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +15,10 @@ import com.springoauth2.api.dto.member.LoginResponse;
 import com.springoauth2.global.error.exception.BadRequestException;
 import com.springoauth2.global.error.exception.ConflictException;
 import com.springoauth2.global.error.exception.NotFoundException;
+import com.springoauth2.global.util.CookieUtils;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -41,7 +46,7 @@ public class MemberService {
 	}
 
 	@Transactional
-	public LoginResponse login(LoginRequest loginRequest) {
+	public LoginResponse login(LoginRequest loginRequest, HttpServletResponse httpServletResponse) {
 		final Member member = memberRepository.findMemberByEmail(loginRequest.email())
 			.orElseThrow(() -> new NotFoundException("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다."));
 		validatePasswordMatched(loginRequest.password(), member.getPassword());
@@ -49,6 +54,8 @@ public class MemberService {
 		final String accessToken = jwtProviderService.generateAccessToken(member.getEmail(), member.getNickname());
 		final String refreshToken = jwtProviderService.generateRefreshToken(member.getEmail());
 		member.updateRefreshToken(refreshToken);
+
+		addRefreshTokenCookie(refreshToken, httpServletResponse);
 
 		return new LoginResponse(accessToken, refreshToken);
 	}
@@ -75,5 +82,15 @@ public class MemberService {
 		if (!password.equals(checkPassword)) {
 			throw new BadRequestException("❎[ERROR] 입력하신 비밀번호와 동일하지 않습니다.");
 		}
+	}
+
+	private void addRefreshTokenCookie(String refreshToken, HttpServletResponse httpServletResponse) {
+		Cookie refreshTokenCookie = CookieUtils.generateRefreshTokenCookie(REFRESH_TOKEN_COOKIE, refreshToken);
+		httpServletResponse.addCookie(refreshTokenCookie);
+	}
+
+	private void expireRefreshTokenCookie(HttpServletResponse httpServletResponse) {
+		Cookie refreshTokenCookie = CookieUtils.expireRefreshTokenCookie(REFRESH_TOKEN_COOKIE);
+		httpServletResponse.addCookie(refreshTokenCookie);
 	}
 }
