@@ -12,12 +12,14 @@ import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.global.config.TokenConfig;
 import com.springoauth2.global.error.exception.NotFoundException;
+import com.springoauth2.global.util.CookieUtils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -65,8 +67,9 @@ public class JwtProviderService {
 
 		member.updateRefreshToken(newRefreshToken);
 		httpServletResponse.setHeader(ACCESS_TOKEN_HEADER, newAccessToken);
-		// TODO: 리프레시 토큰은 쿠키에 저장하도록 수정
-		httpServletResponse.setHeader(REFRESH_TOKEN_COOKIE, newRefreshToken);
+
+		Cookie refreshTokenCookie = CookieUtils.generateRefreshTokenCookie(REFRESH_TOKEN_COOKIE, newRefreshToken);
+		httpServletResponse.addCookie(refreshTokenCookie);
 
 		return newAccessToken;
 	}
