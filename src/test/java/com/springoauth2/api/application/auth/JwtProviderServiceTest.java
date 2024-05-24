@@ -34,6 +34,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @ContextConfiguration(classes = {TokenConfigTest.class})
@@ -99,13 +100,18 @@ class JwtProviderServiceTest {
 		assertThat(actual.getPayload().get(MEMBER_EMAIL, String.class)).isEqualTo(memberEmail);
 	}
 
+	// TODO: 테스트 실패. 원인 찾아서 다시 수행
 	@Test
 	@DisplayName("REGENERATE ACCESS TOKEN(⭕️ SUCCESS): 리프레시 토큰을 통해 액세스 토큰을 성공적으로 재발급했습니다.")
 	void reGenerateToken_accessToken_success() {
 		// GIVEN
 		Member member = MemberFixture.createMemberEntity();
 		String refreshToken = jwtProviderService.generateRefreshToken(member.getEmail());
+		MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
 		MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
+
+		Cookie refreshTokenCookie = new Cookie(REFRESH_TOKEN_COOKIE, refreshToken);
+		mockHttpServletRequest.setCookies(refreshTokenCookie);
 
 		member.updateRefreshToken(refreshToken);
 
@@ -121,6 +127,16 @@ class JwtProviderServiceTest {
 		// THEN
 		assertThat(actual.getPayload().get(MEMBER_EMAIL, String.class)).isEqualTo(member.getEmail());
 		assertThat(actual.getPayload().get(MEMBER_NICKNAME, String.class)).isEqualTo(member.getNickname());
+
+		Cookie[] cookies = mockHttpServletResponse.getCookies();
+		assertThat(cookies).isNotEmpty();
+
+		Cookie newRefreshTokenCookie = cookies[0];
+		assertThat(newRefreshTokenCookie.getName()).isEqualTo(REFRESH_TOKEN_COOKIE);
+		assertThat(newRefreshTokenCookie.getValue()).isNotEmpty();
+		assertThat(newRefreshTokenCookie.getMaxAge()).isEqualTo(24 * 60 * 60);
+		assertThat(newRefreshTokenCookie.isHttpOnly()).isTrue();
+		assertThat(newRefreshTokenCookie.getPath()).isEqualTo("/");
 	}
 
 	@Test

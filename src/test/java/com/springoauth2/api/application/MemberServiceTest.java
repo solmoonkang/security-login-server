@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.springoauth2.api.application.auth.JwtProviderService;
@@ -105,13 +106,15 @@ class MemberServiceTest {
 		Member member = MemberFixture.createMemberEntity();
 		LoginRequest loginRequest = MemberFixture.createLoginRequest(member);
 
+		MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
+
 		given(memberRepository.findMemberByEmail(any(String.class))).willReturn(Optional.of(member));
 		given(passwordEncoder.matches(any(String.class), any(String.class))).willReturn(true);
 		given(jwtProviderService.generateAccessToken(any(String.class), any(String.class))).willReturn(accessToken);
 		given(jwtProviderService.generateRefreshToken(any(String.class))).willReturn(refreshToken);
 
 		// WHEN
-		LoginResponse actualLoginResponse = memberService.login(loginRequest);
+		LoginResponse actualLoginResponse = memberService.login(loginRequest, mockHttpServletResponse);
 
 		// THEN
 		assertThat(actualLoginResponse.accessToken()).isEqualTo(accessToken);
@@ -125,10 +128,12 @@ class MemberServiceTest {
 		Member member = MemberFixture.createMemberEntity();
 		LoginRequest loginRequest = MemberFixture.createLoginRequest(member);
 
+		MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
+
 		given(memberRepository.findMemberByEmail(any(String.class))).willReturn(Optional.empty());
 
 		// WHEN & THEN
-		assertThatThrownBy(() -> memberService.login(loginRequest))
+		assertThatThrownBy(() -> memberService.login(loginRequest, mockHttpServletResponse))
 			.isInstanceOf(NotFoundException.class)
 			.hasMessage("❎[ERROR] 요청하신 회원은 존재하지 않는 회원입니다.");
 	}
@@ -140,11 +145,13 @@ class MemberServiceTest {
 		Member member = MemberFixture.createMemberEntity();
 		LoginRequest loginRequest = MemberFixture.createLoginRequest(member);
 
+		MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
+
 		given(memberRepository.findMemberByEmail(any(String.class))).willReturn(Optional.of(member));
 		given(passwordEncoder.matches(any(String.class), any(String.class))).willReturn(false);
 
 		// WHEN & THEN
-		assertThatThrownBy(() -> memberService.login(loginRequest))
+		assertThatThrownBy(() -> memberService.login(loginRequest, mockHttpServletResponse))
 			.isInstanceOf(BadRequestException.class)
 			.hasMessage("❎[ERROR] 입력하신 비밀번호는 틀린 비밀번호입니다.");
 	}
