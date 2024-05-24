@@ -10,7 +10,7 @@ env:
   PROJECT_NAME: security-login-server
   BUCKET_NAME: login-server-bucket
   CODE_DEPLOY_APP_NAME: login-server
-  DEPLOYMENT_GROUP_NAME: spring-login-server
+  DEPLOYMENT_GROUP_NAME: login-server-group
 
 jobs:
   deploy:
