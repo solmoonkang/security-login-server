@@ -15,17 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.domain.member.repositroy.MemberRepository;
-import com.springoauth2.global.config.TokenConfig;
-import com.springoauth2.global.config.TokenConfigTest;
 import com.springoauth2.global.error.exception.NotFoundException;
 import com.springoauth2.support.JwtFixture;
 import com.springoauth2.support.MemberFixture;
@@ -36,22 +32,17 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TokenConfigTest.class})
+@SpringBootTest(classes = {JwtProviderService.class})
 @TestPropertySource(properties = {
 	"jwt.iss=test",
-	"jwt.secret-access-key=test_test_test_test_test_test_test_test_test_test_test",
+	"jwt.secret.access-key=test_test_test_test_test_test_test_test_test_test_test",
 	"jwt.access-expire=60000",
 	"jwt.refresh-expire=86400000"
 })
-@Import(TokenConfigTest.class)
 class JwtProviderServiceTest {
 
 	@Autowired
 	JwtProviderService jwtProviderService;
-
-	@Autowired
-	TokenConfig tokenConfig;
 
 	@MockBean
 	MemberRepository memberRepository;
@@ -74,7 +65,7 @@ class JwtProviderServiceTest {
 		// WHEN
 		String accessToken = jwtProviderService.generateAccessToken(memberEmail, memberNickname);
 		Jws<Claims> actual = Jwts.parser()
-			.verifyWith(tokenConfig.getSecretKey())
+			.verifyWith(secretKey)
 			.build()
 			.parseSignedClaims(accessToken);
 
@@ -92,7 +83,7 @@ class JwtProviderServiceTest {
 		// WHEN
 		String refreshToken = jwtProviderService.generateRefreshToken(memberEmail);
 		Jws<Claims> actual = Jwts.parser()
-			.verifyWith(tokenConfig.getSecretKey())
+			.verifyWith(secretKey)
 			.build()
 			.parseSignedClaims(refreshToken);
 
@@ -100,7 +91,6 @@ class JwtProviderServiceTest {
 		assertThat(actual.getPayload().get(MEMBER_EMAIL, String.class)).isEqualTo(memberEmail);
 	}
 
-	// TODO: 테스트 실패. 원인 찾아서 다시 수행
 	@Test
 	@DisplayName("REGENERATE ACCESS TOKEN(⭕️ SUCCESS): 리프레시 토큰을 통해 액세스 토큰을 성공적으로 재발급했습니다.")
 	void reGenerateToken_accessToken_success() {
