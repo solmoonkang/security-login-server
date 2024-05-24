@@ -14,6 +14,7 @@ import com.springoauth2.api.dto.member.CreateMemberRequest;
 import com.springoauth2.api.dto.member.LoginRequest;
 import com.springoauth2.api.dto.member.LoginResponse;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,7 +33,8 @@ public class MemberController {
 
 	@PostMapping("/login")
 	@ResponseStatus(HttpStatus.OK)
-	public ResponseEntity<LoginResponse> login(@RequestBody @Validated LoginRequest loginRequest) {
-		return ResponseEntity.ok(memberService.login(loginRequest));
+	public ResponseEntity<LoginResponse> login(@RequestBody @Validated LoginRequest loginRequest,
+		HttpServletResponse httpServletResponse) {
+		return ResponseEntity.ok(memberService.login(loginRequest, httpServletResponse));
 	}
 }
