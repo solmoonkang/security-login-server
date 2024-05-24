@@ -1,0 +1,7 @@
+jwt:
+  iss: auth
+  secret:
+    access-key: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+  access-expire: 300_000        # 5 min
+  refresh-expire: 604_800_000   # 7 day
+  # access-expire: 10_000       # 10 sec
