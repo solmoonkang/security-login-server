@@ -8,7 +8,7 @@ logging:
 spring:
 
   application:
-    name: spring-oauth2
+    name: security-login-server
 
   jpa:
     show-sql: true
