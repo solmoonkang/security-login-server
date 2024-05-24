@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_NAME: spring-oauth2
+  PROJECT_NAME: security-login-server
   BUCKET_NAME: login-server-bucket
   CODE_DEPLOY_APP_NAME: login-server
   DEPLOYMENT_GROUP_NAME: spring-login-server
