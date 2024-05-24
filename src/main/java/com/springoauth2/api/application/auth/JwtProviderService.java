@@ -2,15 +2,18 @@ package com.springoauth2.api.application.auth;
 
 import static com.springoauth2.global.util.Constant.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.api.domain.member.Member;
 import com.springoauth2.api.domain.member.repositroy.MemberRepository;
-import com.springoauth2.global.config.TokenConfig;
 import com.springoauth2.global.error.exception.NotFoundException;
 import com.springoauth2.global.util.CookieUtils;
 
@@ -19,6 +22,8 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,13 +35,29 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class JwtProviderService {
 
-	private final TokenConfig tokenConfig;
+	@Value("${jwt.iss}")
+	private String iss;
 
+	@Value("${jwt.secret.access-key}")
+	private String salt;
+
+	@Value("${jwt.access-expire}")
+	private long accessExpire;
+
+	@Value("${jwt.refresh-expire}")
+	private long refreshExpire;
+
+	private SecretKey secretKey;
 	private final MemberRepository memberRepository;
+
+	@PostConstruct
+	private void init() {
+		secretKey = Keys.hmacShaKeyFor(salt.getBytes(StandardCharsets.UTF_8));
+	}
 
 	public String generateAccessToken(String email, String nickname) {
 		final Date issuedDate = new Date();
-		final Date expiredDate = new Date(issuedDate.getTime() + tokenConfig.getAccessExpire());
+		final Date expiredDate = new Date(issuedDate.getTime() + accessExpire);
 
 		return buildJwt(issuedDate, expiredDate)
 			.claim(MEMBER_EMAIL, email)
@@ -46,7 +67,7 @@ public class JwtProviderService {
 
 	public String generateRefreshToken(String email) {
 		final Date issuedDate = new Date();
-		final Date expiredDate = new Date(issuedDate.getTime() + tokenConfig.getAccessExpire());
+		final Date expiredDate = new Date(issuedDate.getTime() + refreshExpire);
 
 		return buildJwt(issuedDate, expiredDate)
 			.claim(MEMBER_EMAIL, email)
@@ -96,7 +117,7 @@ public class JwtProviderService {
 	public boolean isUsable(String token) {
 		try {
 			Jwts.parser()
-				.verifyWith(tokenConfig.getSecretKey())
+				.verifyWith(secretKey)
 				.build()
 				.parseSignedClaims(token);
 
@@ -123,15 +144,15 @@ public class JwtProviderService {
 
 	private JwtBuilder buildJwt(Date issuedDate, Date expiredDate) {
 		return Jwts.builder()
-			.issuer(tokenConfig.getIss())
+			.issuer(iss)
 			.issuedAt(issuedDate)
 			.expiration(expiredDate)
-			.signWith(tokenConfig.getSecretKey(), SignatureAlgorithm.HS256);
+			.signWith(secretKey, SignatureAlgorithm.HS256);
 	}
 
 	private Claims getClaimsByToken(String token) {
 		return Jwts.parser()
-			.verifyWith(tokenConfig.getSecretKey())
+			.verifyWith(secretKey)
 			.build()
 			.parseSignedClaims(token)
 			.getPayload();
