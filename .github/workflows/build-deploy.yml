@@ -7,10 +7,10 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_NAME: SPRING_OAUTH2
-  BUCKET_NAME: LOGIN_SERVER_BUCKET
-  CODE_DEPLOY_APP_NAME: LOGIN_SERVER
-  DEPLOYMENT_GROUP_NAME: SPRING_LOGIN_SERVER
+  PROJECT_NAME: spring-oauth2
+  BUCKET_NAME: login-server-bucket
+  CODE_DEPLOY_APP_NAME: login-server
+  DEPLOYMENT_GROUP_NAME: spring-login-server
 
 jobs:
   deploy:
@@ -26,9 +26,6 @@ jobs:
       - name: Permission for gradlew
         run: chmod +x ./gradlew
         shell: bash
-
-      - name: Build
-        run: ./gradlew build --stacktrace
 
       - name: Build and Test
         run: ./gradlew build test
