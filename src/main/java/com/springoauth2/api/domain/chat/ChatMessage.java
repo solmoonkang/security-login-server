@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 
+import com.springoauth2.api.domain.member.Member;
+import com.springoauth2.api.dto.chat.ChatMessageRequest;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,29 +32,38 @@ public class ChatMessage {
 	@Column(name = "chat_message_id")
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chat_room_id")
 	private ChatRoom chatRoom;
 
-	@Column(name = "sender_email")
-	private String senderEmail;
-
-	@Column(name = "sender_nickname")
-	private String senderNickname;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id")
+	private Member member;
 
 	@Column(name = "message", columnDefinition = "TEXT")
 	private String message;
 
 	@CreatedDate
-	@Column(updatable = false)
-	private LocalDateTime sendDate;
+	@Column(name = "send_at", updatable = false)
+	private LocalDateTime sendAt;
+
+	@Column(name = "is_blined")
+	private boolean isBlinded = false;
 
 	@Builder
-	private ChatMessage(ChatRoom chatRoom, String senderEmail, String senderNickname, String message) {
+	private ChatMessage(ChatRoom chatRoom, Member member, String message) {
 		this.chatRoom = chatRoom;
-		this.senderEmail = senderEmail;
-		this.senderNickname = senderNickname;
+		this.member = member;
 		this.message = message;
-		this.sendDate = LocalDateTime.now();
+		this.sendAt = LocalDateTime.now();
+	}
+
+	public static ChatMessage createChatMessage(ChatRoom chatRoom, Member member,
+		ChatMessageRequest chatMessageRequest) {
+		return ChatMessage.builder()
+			.chatRoom(chatRoom)
+			.member(member)
+			.message(chatMessageRequest.content())
+			.build();
 	}
 }
