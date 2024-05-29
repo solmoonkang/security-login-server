@@ -6,28 +6,22 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
-@RequiredArgsConstructor
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry messageBrokerRegistry) {
-		// 클라이언트에서 보낸 메시지를 받을 Prefix
-		messageBrokerRegistry.enableSimpleBroker("/topic", "/queue");
-
-		// 해당 주소를 구독하고 있는 클라이언트에게 메시지 전달
+		// "/topic"으로 시작하는 메시지는 메시지 브로커가 관리
+		messageBrokerRegistry.enableSimpleBroker("/topic");
+		// 클라이언트가 "/app"으로 시작하는 메시지를 보낼 때, 이 메시지는 @MessageMapping으로 라우팅
 		messageBrokerRegistry.setApplicationDestinationPrefixes("/app");
 	}
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry stompEndpointRegistry) {
 		// 주소: "ws://localhost:8080/ws-stomp"
-
-		stompEndpointRegistry.addEndpoint("/ws")	// SockJS 연결 주소
-			.setAllowedOrigins("*")					//
-			.withSockJS();							// 버전 낮은 브라우저에서도 적용 가능
+		// 웹 소켓 연결 엔드포인트 등록
+		stompEndpointRegistry.addEndpoint("/ws").withSockJS();
 	}
 }
