@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,9 +36,10 @@ public class ChatController {
 		return ResponseEntity.ok("OK");
 	}
 
-	@MessageMapping("ws/{chatRoomId}/chat-message")
+	@MessageMapping("/ws/{chatRoomId}/chat-message")
 	public void sendChatMessage(@DestinationVariable Long chatRoomId,
 		@Validated @RequestBody ChatMessageRequest chatMessageRequest) {
+		chatService.saveChatMessage(chatRoomId, chatMessageRequest);
 		simpMessageSendingOperations.convertAndSend("/topic/ws/" + chatRoomId, chatMessageRequest.message());
 	}
 
