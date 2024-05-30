@@ -34,14 +34,12 @@ public class ChatService {
 	}
 
 	@Transactional
-	public ChatMessageResponse createChatMessage(Long chatRoomId, ChatMessageRequest chatMessageRequest) {
+	public void saveChatMessage(Long chatRoomId, ChatMessageRequest chatMessageRequest) {
 		final ChatRoom chatRoom = getChatRoomById(chatRoomId);
 		final Member member = getMemberByEmail(chatMessageRequest.email());
 
 		final ChatMessage chatMessage = ChatMessage.createChatMessage(chatRoom, member, chatMessageRequest);
 		chatMessageRepository.save(chatMessage);
-
-		return convertToChatMessageResponse(chatMessage);
 	}
 
 	public List<ChatMessageResponse> getChatMessageList(Long chatRoomId) {
