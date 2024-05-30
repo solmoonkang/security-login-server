@@ -42,7 +42,8 @@ public class SecurityConfig {
 			.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
 			.requestMatchers("/h2-console/**")
 			.requestMatchers("/api/signup")
-			.requestMatchers("/api/login");
+			.requestMatchers("/api/login")
+			.requestMatchers("/ws/**");
 	}
 
 	@Bean
