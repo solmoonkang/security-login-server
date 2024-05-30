@@ -63,7 +63,7 @@ public class ChatMessage {
 		return ChatMessage.builder()
 			.chatRoom(chatRoom)
 			.member(member)
-			.message(chatMessageRequest.content())
+			.message(chatMessageRequest.message())
 			.build();
 	}
 }
