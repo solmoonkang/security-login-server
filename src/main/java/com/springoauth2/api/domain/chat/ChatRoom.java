@@ -4,16 +4,13 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 
-import com.springoauth2.api.domain.gallery.Gallery;
+import com.springoauth2.api.dto.chat.ChatRoomRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -31,10 +28,6 @@ public class ChatRoom {
 	@Column(name = "chat_room_id")
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn
-	private Gallery gallery;
-
 	@Column(name = "name")
 	private String name;
 
@@ -43,16 +36,14 @@ public class ChatRoom {
 	private LocalDateTime createdAt;
 
 	@Builder
-	private ChatRoom(Gallery gallery, String name) {
-		this.gallery = gallery;
+	private ChatRoom(String name) {
 		this.name = name;
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static ChatRoom createChatRoom(Gallery gallery, String name) {
+	public static ChatRoom createChatRoom(ChatRoomRequest chatRoomRequest) {
 		return ChatRoom.builder()
-			.gallery(gallery)
-			.name(name)
+			.name(chatRoomRequest.title())
 			.build();
 	}
 }
