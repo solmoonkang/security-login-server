@@ -19,6 +19,7 @@ import com.springoauth2.api.application.ChatService;
 import com.springoauth2.api.dto.chat.ChatMessageRequest;
 import com.springoauth2.api.dto.chat.ChatMessageResponse;
 import com.springoauth2.api.dto.chat.ChatRoomRequest;
+import com.springoauth2.api.dto.member.MemberResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,22 +30,28 @@ public class ChatController {
 	private final ChatService chatService;
 	private final SimpMessageSendingOperations simpMessageSendingOperations;
 
-	@PostMapping("/api/chat-room")
+	@PostMapping("/api/chat-rooms")
 	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<String> createChatRoom(@Validated @RequestBody ChatRoomRequest chatRoomRequest) {
+	public ResponseEntity<String> enterChatRoom(@Validated @RequestBody ChatRoomRequest chatRoomRequest) {
 		chatService.createChatRoom(chatRoomRequest);
 		return ResponseEntity.ok("OK");
 	}
 
-	@MessageMapping("/ws/{chatRoomId}/chat-message")
-	public void sendChatMessage(@DestinationVariable Long chatRoomId,
-		@Validated @RequestBody ChatMessageRequest chatMessageRequest) {
-		chatService.saveChatMessage(chatRoomId, chatMessageRequest);
-		simpMessageSendingOperations.convertAndSend("/topic/ws/" + chatRoomId, chatMessageRequest.message());
+	@MessageMapping(value = "/ws/{chatRoomId}/chat-messages")
+	public void saveAndSendChatMessage(@DestinationVariable Long chatRoomId,
+		@Validated @RequestBody ChatMessageRequest chatMessageRequest
+	) {
+		chatService.saveAndSendChatMessage(chatRoomId, chatMessageRequest);
+		simpMessageSendingOperations.convertAndSend("/sub/ws/" + chatRoomId, chatMessageRequest.message());
 	}
 
-	@GetMapping("/api/{chatRoomId}/chat-message")
+	@GetMapping("/api/{chatRoomId}/chat-messages")
 	public ResponseEntity<List<ChatMessageResponse>> getChatMessageList(@PathVariable Long chatRoomId) {
 		return ResponseEntity.ok(chatService.getChatMessageList(chatRoomId));
+	}
+
+	@GetMapping("/api/chat-rooms/{chatRoomId}")
+	public ResponseEntity<List<MemberResponse>> getLoggedInVisitors(@PathVariable Long chatRoomId) {
+		return ResponseEntity.ok(chatService.getLoggedInVisitors(chatRoomId));
 	}
 }
