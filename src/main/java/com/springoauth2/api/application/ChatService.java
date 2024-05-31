@@ -1,6 +1,7 @@
 package com.springoauth2.api.application;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,8 @@ import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.api.dto.chat.ChatMessageRequest;
 import com.springoauth2.api.dto.chat.ChatMessageResponse;
 import com.springoauth2.api.dto.chat.ChatRoomRequest;
+import com.springoauth2.api.dto.member.MemberResponse;
+import com.springoauth2.api.infrastructure.WebSocketEventListener;
 import com.springoauth2.global.error.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -26,20 +29,22 @@ public class ChatService {
 	private final MemberRepository memberRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatMessageRepository chatMessageRepository;
+	private final WebSocketEventListener webSocketEventListener;
 
-	@Transactional
 	public void createChatRoom(ChatRoomRequest chatRoomRequest) {
 		final ChatRoom chatRoom = ChatRoom.createChatRoom(chatRoomRequest);
 		chatRoomRepository.save(chatRoom);
 	}
 
 	@Transactional
-	public void saveChatMessage(Long chatRoomId, ChatMessageRequest chatMessageRequest) {
+	public void saveAndSendChatMessage(Long chatRoomId, ChatMessageRequest chatMessageRequest) {
 		final ChatRoom chatRoom = getChatRoomById(chatRoomId);
 		final Member member = getMemberByEmail(chatMessageRequest.email());
 
 		final ChatMessage chatMessage = ChatMessage.createChatMessage(chatRoom, member, chatMessageRequest);
 		chatMessageRepository.save(chatMessage);
+
+		webSocketEventListener.addMemberToChatRoom(chatRoomId, member.getNickname());
 	}
 
 	public List<ChatMessageResponse> getChatMessageList(Long chatRoomId) {
@@ -48,6 +53,15 @@ public class ChatService {
 
 		return chatMessageList.stream()
 			.map(this::convertToChatMessageResponse)
+			.toList();
+	}
+
+	public List<MemberResponse> getLoggedInVisitors(Long chatRoomId) {
+		Set<String> memberNicknames = webSocketEventListener.getActiveMembers(chatRoomId);
+		List<Member> memberList = memberRepository.findAllByNicknameIn(memberNicknames);
+
+		return memberList.stream()
+			.map(member -> new MemberResponse(member.getNickname()))
 			.toList();
 	}
 
@@ -64,8 +78,7 @@ public class ChatService {
 	private ChatMessageResponse convertToChatMessageResponse(ChatMessage chatMessage) {
 		return new ChatMessageResponse(
 			chatMessage.getChatRoom().getId(),
-			chatMessage.getMember().getEmail(),
-			chatMessage.getMember().getNickname(),
+			chatMessage.getSender(),
 			chatMessage.getMessage(),
 			chatMessage.getSendAt());
 	}
