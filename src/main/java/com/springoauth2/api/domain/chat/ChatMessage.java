@@ -36,9 +36,8 @@ public class ChatMessage {
 	@JoinColumn(name = "chat_room_id")
 	private ChatRoom chatRoom;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id")
-	private Member member;
+	@Column(name = "sender")
+	private String sender;
 
 	@Column(name = "message", columnDefinition = "TEXT")
 	private String message;
@@ -47,13 +46,10 @@ public class ChatMessage {
 	@Column(name = "send_at", updatable = false)
 	private LocalDateTime sendAt;
 
-	@Column(name = "is_blined")
-	private boolean isBlinded = false;
-
 	@Builder
-	private ChatMessage(ChatRoom chatRoom, Member member, String message) {
+	private ChatMessage(ChatRoom chatRoom, String sender, String message) {
 		this.chatRoom = chatRoom;
-		this.member = member;
+		this.sender = sender;
 		this.message = message;
 		this.sendAt = LocalDateTime.now();
 	}
@@ -62,7 +58,7 @@ public class ChatMessage {
 		ChatMessageRequest chatMessageRequest) {
 		return ChatMessage.builder()
 			.chatRoom(chatRoom)
-			.member(member)
+			.sender(member.getNickname())
 			.message(chatMessageRequest.message())
 			.build();
 	}
