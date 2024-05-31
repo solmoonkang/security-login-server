@@ -43,7 +43,7 @@ public class SecurityConfig {
 			.requestMatchers("/h2-console/**")
 			.requestMatchers("/api/signup")
 			.requestMatchers("/api/login")
-			.requestMatchers("/ws/**");
+			.requestMatchers("/ws");
 	}
 
 	@Bean
@@ -58,7 +58,7 @@ public class SecurityConfig {
 			.sessionManagement(session -> session.sessionCreationPolicy(STATELESS));
 
 		httpSecurity.authorizeHttpRequests((auth) -> auth
-			.anyRequest().permitAll()
+			.anyRequest().authenticated()
 		);
 
 		httpSecurity.addFilterBefore(
