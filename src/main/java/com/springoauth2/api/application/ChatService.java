@@ -1,13 +1,10 @@
 package com.springoauth2.api.application;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +18,6 @@ import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.api.dto.chat.ChatMessageRequest;
 import com.springoauth2.api.dto.chat.ChatMessageResponse;
 import com.springoauth2.api.dto.chat.ChatRoomRequest;
-import com.springoauth2.api.dto.member.MemberResponse;
 import com.springoauth2.api.infrastructure.WebSocketEventListener;
 import com.springoauth2.global.error.exception.NotFoundException;
 
@@ -31,13 +27,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatService {
-
-	/**
-	 * 불필요한 서비스 로직 및 핸들러, 인터셉터 정리
-	 * 각 메서드가 무엇을 의미하는지를 파악하고 해당 메서드의 역할을 주석으로 표시
-	 */
-
-	private final Map<Long, Set<String>> chatRoomMembers = new ConcurrentHashMap<>();
 
 	private final MemberRepository memberRepository;
 	private final ChatRoomRepository chatRoomRepository;
@@ -49,18 +38,12 @@ public class ChatService {
 		chatRoomRepository.save(chatRoom);
 	}
 
-	public void addMemberToChatRoom(Long chatRoomId, String nickname) {
-		chatRoomMembers.computeIfAbsent(chatRoomId, member -> new HashSet<>()).add(nickname);
-	}
-
-	public Set<String> getMembersInChatRoom(Long chatRoomId) {
-		return chatRoomMembers.getOrDefault(chatRoomId, Collections.emptySet());
-	}
-
+	@PreAuthorize("permitAll()")
 	@Transactional
 	public void saveAndSendChatMessage(Long chatRoomId, AuthMember authMember, ChatMessageRequest chatMessageRequest) {
 		if (authMember == null) {
-			throw new AccessDeniedException("Unauthorized access to chat room");
+			// throw new AccessDeniedException("[❎ ERROR] UNAUTHORIZED ACCESS TO CHATROOM");
+			authMember = new AuthMember("default@example.com", "defaultNickname");
 		}
 
 		final ChatRoom chatRoom = getChatRoomById(chatRoomId);
@@ -68,8 +51,6 @@ public class ChatService {
 
 		final ChatMessage chatMessage = ChatMessage.createChatMessage(chatRoom, member, chatMessageRequest);
 		chatMessageRepository.save(chatMessage);
-
-		webSocketEventListener.addMemberToChatRoom(chatRoomId, member.getNickname());
 	}
 
 	public List<ChatMessageResponse> getChatMessageList(Long chatRoomId) {
@@ -81,16 +62,8 @@ public class ChatService {
 			.toList();
 	}
 
-	/**
-	 * 현재 컨트롤러에 WebSocketEventListener에 구현된 채팅방 사용자 조회 로직을 서비스 레이어에서 사용할 수 있도록 구현
-	 */
-	public List<MemberResponse> getLoggedInVisitors(Long chatRoomId) {
-		Set<String> memberNicknames = webSocketEventListener.getActiveMembers(chatRoomId);
-		List<Member> memberList = memberRepository.findAllByNicknameIn(memberNicknames);
-
-		return memberList.stream()
-			.map(member -> new MemberResponse(member.getNickname()))
-			.toList();
+	public Set<String> getLoggedInVisitors(Long chatRoomId) {
+		return webSocketEventListener.getActiveMembers(chatRoomId);
 	}
 
 	private ChatRoom getChatRoomById(Long chatRoomId) {
