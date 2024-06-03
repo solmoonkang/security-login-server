@@ -14,6 +14,7 @@ import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.global.error.exception.NotFoundException;
 
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
@@ -40,7 +41,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 		@NotNull FilterChain filterChain) {
 
 		String accessToken = jwtProviderService.extractToken(ACCESS_TOKEN_HEADER, httpServletRequest);
-		String refreshToken = jwtProviderService.extractToken(REFRESH_TOKEN_COOKIE, httpServletRequest);
+		String refreshToken = extractRefreshTokenFromCookies(httpServletRequest);
 
 		try {
 			if (jwtProviderService.isUsable(accessToken)) {
@@ -70,5 +71,16 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 		final Authentication authentication = new UsernamePasswordAuthenticationToken(authMember, BLANK);
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+
+	private String extractRefreshTokenFromCookies(HttpServletRequest httpServletRequest) {
+		if (httpServletRequest.getCookies() != null) {
+			for (Cookie cookie : httpServletRequest.getCookies()) {
+				if (REFRESH_TOKEN_COOKIE.equals(cookie.getName())) {
+					return cookie.getValue();
+				}
+			}
+		}
+		return null;
 	}
 }
