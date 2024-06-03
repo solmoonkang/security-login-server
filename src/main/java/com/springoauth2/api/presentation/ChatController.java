@@ -23,7 +23,6 @@ import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.api.dto.chat.ChatMessageRequest;
 import com.springoauth2.api.dto.chat.ChatMessageResponse;
 import com.springoauth2.api.dto.chat.ChatRoomRequest;
-import com.springoauth2.api.infrastructure.WebSocketEventListener;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +32,6 @@ public class ChatController {
 
 	private final ChatService chatService;
 	private final SimpMessageSendingOperations simpMessageSendingOperations;
-	private final WebSocketEventListener webSocketEventListener;
 
 	@PostMapping("/api/chat-rooms")
 	@ResponseStatus(HttpStatus.CREATED)
@@ -52,9 +50,9 @@ public class ChatController {
 		simpMessageSendingOperations.convertAndSend("/sub/ws/" + chatRoomId, chatMessageRequest.message());
 	}
 
-	@GetMapping("/api/chat-rooms/{chatRoomId}")
+	@GetMapping("/api/chat-rooms/{chatRoomId}/members")
 	public ResponseEntity<Set<String>> getLoggedInVisitors(@PathVariable Long chatRoomId) {
-		return ResponseEntity.ok(webSocketEventListener.getActiveMembers(chatRoomId));
+		return ResponseEntity.ok(chatService.getLoggedInVisitors(chatRoomId));
 	}
 
 	@GetMapping("/api/{chatRoomId}/chat-messages")
