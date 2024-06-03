@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import com.springoauth2.api.application.auth.JwtProviderService;
 import com.springoauth2.api.infrastructure.AuthHandshakeInterceptor;
@@ -33,7 +34,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry stompEndpointRegistry) {
 		stompEndpointRegistry.addEndpoint("/ws")
-			.addInterceptors(authHandshakeInterceptor())
+			.setHandshakeHandler(new DefaultHandshakeHandler())
+			//.addInterceptors(authHandshakeInterceptor())
 			.setAllowedOriginPatterns("*");
 	}
 }
