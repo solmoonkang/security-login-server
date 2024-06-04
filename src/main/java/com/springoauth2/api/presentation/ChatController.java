@@ -1,7 +1,6 @@
 package com.springoauth2.api.presentation;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +22,19 @@ import com.springoauth2.api.domain.auth.AuthMember;
 import com.springoauth2.api.dto.chat.ChatMessageRequest;
 import com.springoauth2.api.dto.chat.ChatMessageResponse;
 import com.springoauth2.api.dto.chat.ChatRoomRequest;
+import com.springoauth2.api.infrastructure.MemberSessionRegistry;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class ChatController {
 
 	private final ChatService chatService;
 	private final SimpMessageSendingOperations simpMessageSendingOperations;
+	private final MemberSessionRegistry memberSessionRegistry;
 
 	@PostMapping("/api/chat-rooms")
 	@ResponseStatus(HttpStatus.CREATED)
@@ -51,8 +54,14 @@ public class ChatController {
 	}
 
 	@GetMapping("/api/chat-rooms/{chatRoomId}/members")
-	public ResponseEntity<Set<String>> getLoggedInVisitors(@PathVariable Long chatRoomId) {
-		return ResponseEntity.ok(chatService.getLoggedInVisitors(chatRoomId));
+	public ResponseEntity<List<String>> getLoggedInVisitors(@PathVariable Long chatRoomId) {
+		String destination = "/sub/ws/" + chatRoomId;
+		log.info("[✅ LOGGER] GETTING MEMBERS FOR DESTINATION={}", destination);
+
+		List<String> members = memberSessionRegistry.getMembersInChatRoom(destination);
+		log.info("[✅ LOGGER] MEMBERS FOUND: {}", members);
+
+		return ResponseEntity.ok(members);
 	}
 
 	@GetMapping("/api/{chatRoomId}/chat-messages")
