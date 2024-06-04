@@ -1,9 +1,7 @@
 package com.springoauth2.api.application;
 
 import java.util.List;
-import java.util.Set;
 
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,11 +16,12 @@ import com.springoauth2.api.domain.member.repositroy.MemberRepository;
 import com.springoauth2.api.dto.chat.ChatMessageRequest;
 import com.springoauth2.api.dto.chat.ChatMessageResponse;
 import com.springoauth2.api.dto.chat.ChatRoomRequest;
-import com.springoauth2.api.infrastructure.WebSocketEventListener;
 import com.springoauth2.global.error.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,7 +30,6 @@ public class ChatService {
 	private final MemberRepository memberRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatMessageRepository chatMessageRepository;
-	private final WebSocketEventListener webSocketEventListener;
 
 	public void createChatRoom(ChatRoomRequest chatRoomRequest) {
 		final ChatRoom chatRoom = ChatRoom.createChatRoom(chatRoomRequest);
@@ -42,7 +40,6 @@ public class ChatService {
 	@Transactional
 	public void saveAndSendChatMessage(Long chatRoomId, AuthMember authMember, ChatMessageRequest chatMessageRequest) {
 		if (authMember == null) {
-			// throw new AccessDeniedException("[❎ ERROR] UNAUTHORIZED ACCESS TO CHATROOM");
 			authMember = new AuthMember("default@example.com", "defaultNickname");
 		}
 
@@ -60,10 +57,6 @@ public class ChatService {
 		return chatMessageList.stream()
 			.map(this::convertToChatMessageResponse)
 			.toList();
-	}
-
-	public Set<String> getLoggedInVisitors(Long chatRoomId) {
-		return webSocketEventListener.getActiveMembers(chatRoomId);
 	}
 
 	private ChatRoom getChatRoomById(Long chatRoomId) {
