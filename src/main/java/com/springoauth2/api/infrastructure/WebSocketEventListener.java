@@ -1,10 +1,6 @@
 package com.springoauth2.api.infrastructure;
 
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -23,8 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WebSocketEventListener {
 
-	private final Map<String, String> sessionIdToNickname = new ConcurrentHashMap<>();
-	private final Map<String, Set<String>> chatRoomMembers = new ConcurrentHashMap<>();
+	private final MemberSessionRegistry memberSessionRegistry;
 
 	@EventListener
 	public void handleSubscribeEvent(SessionSubscribeEvent sessionSubscribeEvent) {
@@ -36,11 +31,10 @@ public class WebSocketEventListener {
 		}
 		log.info("[✅ LOGGER] MEMBER {} IS JOIN CHATROOM", authMember.nickname());
 
-		addMemberToChatRoom(
-			authMember,
-			extractSessionIdFromHeaderAccessor(sessionSubscribeEvent),
-			extractDestinationFromHeaderAccessor(sessionSubscribeEvent)
-		);
+		final String sessionId = extractSessionIdFromHeaderAccessor(sessionSubscribeEvent);
+		final String destination = extractDestinationFromHeaderAccessor(sessionSubscribeEvent);
+
+		memberSessionRegistry.addSession(authMember.nickname(), sessionId, destination);
 	}
 
 	@EventListener
@@ -49,40 +43,13 @@ public class WebSocketEventListener {
 
 		AuthMember authMember = extractAuthMemberFromAttributes(sessionUnsubscribeEvent);
 		if (authMember == null) {
-			authMember = new AuthMember("default@example.com", "defaultNickname"); // 기본 값 사용
+			authMember = new AuthMember("default@example.com", "defaultNickname");
 		}
 		log.info("[✅ LOGGER] MEMBER {} IS LEFT CHATROOM", authMember.nickname());
 
-		removeMemberBySessionId(
-			extractSessionIdFromHeaderAccessor(sessionUnsubscribeEvent),
-			extractDestinationFromHeaderAccessor(sessionUnsubscribeEvent)
-		);
-	}
+		final String sessionId = extractSessionIdFromHeaderAccessor(sessionUnsubscribeEvent);
 
-	public void addMemberToChatRoom(AuthMember authMember, String sessionId, String destination) {
-		sessionIdToNickname.put(sessionId, authMember.nickname());
-
-		chatRoomMembers.computeIfAbsent(destination, member -> ConcurrentHashMap.newKeySet())
-			.add(authMember.nickname());
-
-		log.info("[✅ LOGGER] ADD MEMBERS TO CHATROOM: {} -> {}", destination, chatRoomMembers.get(destination));
-	}
-
-	public void removeMemberBySessionId(String sessionId, String destination) {
-		String nickname = sessionIdToNickname.remove(sessionId);
-
-		if (nickname == null) return;
-
-		Set<String> members = chatRoomMembers.get(destination);
-		if (members != null && members.remove(nickname) && members.isEmpty()) {
-			chatRoomMembers.remove(destination);
-		}
-
-		log.info("[✅ LOGGER] REMOVE MEMBERS TO CHATROOM: {} -> {}", destination, chatRoomMembers.get(destination));
-	}
-
-	public Set<String> getActiveMembers(Long chatRoomId) {
-		return chatRoomMembers.getOrDefault(chatRoomId.toString(), new HashSet<>());
+		memberSessionRegistry.removeSession(sessionId);
 	}
 
 	private String extractSessionIdFromHeaderAccessor(AbstractSubProtocolEvent abstractSubProtocolEvent) {
